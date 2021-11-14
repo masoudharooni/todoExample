@@ -48,7 +48,7 @@
 
         </div>
         <div class="add-task">
-            <form action="<?= $_SERVER['PHP_SELF'] ?>" method="POST">
+            <form action="process/ajaxHandler.php" method="POST" id="addTaskForm">
                 <input type="text" class="newTask" name="taskName" placeholder="New Task . . ." required>
                 <input type="submit" class="btn btn-outline-danger addBtn" value="add">
             </form>
@@ -66,8 +66,42 @@
 
         <!-- script for edit and delete tasks -->
         <script>
-            // delete tasks 
-            $(document).ready(function() {
+            
+            const renderData = () => {
+                $("#addTaskForm").submit(function(e) {
+                    e.preventDefault();
+                    var form = $(this);
+                    var url = form.attr('action');
+                    var editserialize = form.serialize();
+                    editserialize = decodeURIComponent(editserialize.replace(/%2F/g, " "))
+                    $.ajax({
+                        type: form.attr('method'),
+                        url: url,
+                        data: {
+                            action: "addTask",
+                            data: editserialize
+                        },
+                        // type: 'json',
+                        success: function(response) {
+                            responseObj = JSON.parse(response);
+                            document.querySelector('.all-task').innerHTML += `<div class="task">
+                    <p class="taskName">${responseObj['name']}</p>
+                    <div class="icons">
+                        <i data-id="${responseObj['id']}" class="far fa-trash-alt delete icon clickable"></i>
+                        <i data-id="${responseObj['id']}" class="fas fa-edit edit icon clickable"></i>
+                        <i data-id="${responseObj['id']}" class="far <?php
+                                                                        $taskObj = new task;
+                                                                        $taskObj = $taskObj->displayTask($task->id)[0]->status;
+                                                                        echo $taskObj ? "fa-check-square" : "fa-square";
+                                                                        ?> done icon clickable"></i>
+                    </div>
+                </div>`;
+                renderData();
+                            $('input.newTask').val('');
+                        }
+                    });
+                });
+                // delete tasks 
                 $("i.delete").click(function(e) {
                     var id = $(this).attr("data-id");
                     if (confirm("Are you sure?")) {
@@ -112,9 +146,7 @@
                             id: editId
                         },
                         success: function(response) {
-                            $(".editTaskInput").attr({
-                                value: response
-                            });
+                            $(".editTaskInput").val(response);
                         }
                     });
                 });
@@ -141,34 +173,42 @@
                         }
                     });
                 });
+                // });
+
+                // done and undone task
+                $('.done').click(function(e) {
+                    e.preventDefault();
+                    var taskId = $(this).attr("data-id");
+                    $.ajax({
+                        type: "post",
+                        url: "process/ajaxHandler.php",
+                        data: {
+                            action: "doneTask",
+                            id: taskId
+                        },
+                        success: function(response) {
+                            if (response == true) {
+                                if (e.target.classList.contains('fa-check-square')) {
+                                    e.target.classList.remove('fa-check-square');
+                                    e.target.classList.add('fa-square');
+                                } else {
+                                    e.target.classList.add('fa-check-square');
+                                    e.target.classList.remove('fa-square');
+                                }
+                            } else {
+                                alert(response);
+                            }
+                        }
+                    });
+                });
+            }
+            $(document).ready(function() {
+                // add task without refresh
+                renderData();
+
             });
 
-            // done and undone task
-            $('.done').click(function(e) {
-                e.preventDefault();
-                var taskId = $(this).attr("data-id");
-                $.ajax({
-                    type: "post",
-                    url: "process/ajaxHandler.php",
-                    data: {
-                        action: "doneTask",
-                        id: taskId
-                    },
-                    success: function(response) {
-                        if (response == true) {
-                            if (e.target.classList.contains('fa-check-square')) {
-                                e.target.classList.remove('fa-check-square');
-                                e.target.classList.add('fa-square');
-                            } else {
-                                e.target.classList.add('fa-check-square');
-                                e.target.classList.remove('fa-square');
-                            }
-                        } else {
-                            alert(response);
-                        }
-                    }
-                });
-            });
+
         </script>
 </body>
 

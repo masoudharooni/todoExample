@@ -24,3 +24,13 @@ if ($_POST['action'] == "doneTask") {
     $taskObj = new task;
     echo ($taskObj->doneTask($_POST['id']));
 }
+
+if ($_POST['action'] == "addTask") {
+    $newTaskName = explode('=', $_POST['data'])[1];
+    $taskObj = new task;
+    $data = [
+        'id' => $taskObj->addTask($newTaskName),
+        'name' => $newTaskName
+    ];
+    echo json_encode($data);
+}

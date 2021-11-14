@@ -7,6 +7,7 @@ class task extends Connection
         $sql = "INSERT INTO tasks (name) VALUES (?)";
         $stmt = ($this->conn)->prepare($sql);
         $stmt->execute([$taskName]);
+        return $this->conn->lastInsertId();
     }
 
     public function displayTask(int $id = null)
