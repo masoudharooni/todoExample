@@ -35,11 +35,11 @@
                     <div class="icons">
                         <i data-id="<?= $task->id ?>" class="far fa-trash-alt delete icon clickable"></i>
                         <i data-id="<?= $task->id ?>" class="fas fa-edit edit icon clickable"></i>
-                        <i data-id="<?= $task->id ?>" class="<?php
-                                                                $taskObj = new task;
-                                                                $taskObj = $taskObj->displayTask($task->id)[0]->status;
-                                                                echo $taskObj ? "far fa-check-square" : "fas fa-square";
-                                                                ?> done icon clickable"></i>
+                        <i data-id="<?= $task->id ?>" class="far <?php
+                                                                    $taskObj = new task;
+                                                                    $taskObj = $taskObj->displayTask($task->id)[0]->status;
+                                                                    echo $taskObj ? "fa-check-square" : "fa-square";
+                                                                    ?> done icon clickable"></i>
                     </div>
                 </div>
             <?php
@@ -58,7 +58,7 @@
         <div class="myModal">
             <div class="modal-container">
                 <i class="fas fa-times closeModal clickable"></i>
-                <input type="text" name="editTask" class="editTaskInput" placeholder="New name for this task . . ." value="" required>
+                <input type="text" id="editInput" name="editTask" class="editTaskInput" placeholder="New name for this task . . ." value="" required>
                 <input type="submit" class="btn btn-outline-primary editBtn" value="edit">
             </div>
         </div>
@@ -80,7 +80,9 @@
                             },
                             success: function(response) {
                                 if (response == true) {
-                                    location.reload();
+                                    // location.reload();
+                                    // e.target.parentNode.parentNode.remove();
+                                    e.target.closest('.task').remove();
                                 } else {
                                     alert(response);
                                 }
@@ -97,7 +99,9 @@
                 });
 
                 var editId;
+                var editEventBtn;
                 $("i.edit").click(function(e) {
+                    editEventBtn = e;
                     $('.myModal').fadeIn(1000);
                     editId = $(this).attr("data-id");
                     $.ajax({
@@ -128,7 +132,9 @@
                         },
                         success: function(response) {
                             if (response == true) {
-                                location.reload();
+                                var editInputValue = document.getElementById('editInput').value;
+                                editEventBtn.target.closest('.task').querySelector('.taskName').innerHTML = editInputValue;
+                                $('.myModal').fadeOut(600);
                             } else {
                                 alert(response);
                             }
@@ -137,7 +143,7 @@
                 });
             });
 
-            // done and undone task 
+            // done and undone task
             $('.done').click(function(e) {
                 e.preventDefault();
                 var taskId = $(this).attr("data-id");
@@ -150,7 +156,13 @@
                     },
                     success: function(response) {
                         if (response == true) {
-                            location.reload();
+                            if (e.target.classList.contains('fa-check-square')) {
+                                e.target.classList.remove('fa-check-square');
+                                e.target.classList.add('fa-square');
+                            } else {
+                                e.target.classList.add('fa-check-square');
+                                e.target.classList.remove('fa-square');
+                            }
                         } else {
                             alert(response);
                         }
